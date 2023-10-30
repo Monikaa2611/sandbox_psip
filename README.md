@@ -1,2 +1,9 @@
-# GEOINFOMATYKA RZĄDZI
-## O YEEAAAAAAAAAH!
+
+
+
+
+
+
+
+
+

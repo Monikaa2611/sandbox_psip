@@ -66,4 +66,4 @@ def gui(users_list: list) -> None:
                 print('To będzie zrobione')
 
 
-gui()
+gui(users_list)

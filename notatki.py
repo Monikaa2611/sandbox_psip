@@ -1,5 +1,6 @@
 from bs4 import BeautifulSoup
 import requests
+import folium
 
 nazwy_miejscowosci = ['Kraków','Mińsk Mazowiecki', 'Szczecin']
 def get_coordinates_of(city:str)->list[float,float]:
@@ -17,5 +18,22 @@ def get_coordinates_of(city:str)->list[float,float]:
 
     return [response_html_latitude, response_html_longitude]
 
+    for item in nazwy_miejscowosci:
+        print(get_coordinates_of(item))
+
+#zwrócić mapę z pinezką odnoszącą się do nazwy użytkownika podanego z klawiatury
+
+#zwróci mapę z wszystkimi użytkownikami z danej listy (znajom
+city= get_coordinates_of(city='Zamość')
+map = folium.Map(
+    location=city,
+    tiles="OpenStreetMap",
+    zoom_start=15
+)
 for item in nazwy_miejscowosci:
-    print(get_coordinates_of(item))
+    folium.Marker(
+        location=get_coordinates_of(city=item),
+        popup='GEOINFORMATYKA RZĄDZI OU YEAAAH'
+
+    ).add_to(map)
+map.save('mapka.html')

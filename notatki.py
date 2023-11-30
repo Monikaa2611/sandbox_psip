@@ -1,1 +1,0 @@
-## uroczyście przysięgam coś nieczystego

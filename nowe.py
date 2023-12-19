@@ -1,9 +1,22 @@
 from bs4 import BeautifulSoup
+from dotenv import load_dotenv
+from geoalchemy2 import Geometry
+from sqlalchemy import Column, Integer, String
+import os
 import requests
 import folium
 from dane import users_list
-user = {"city": 'Hrubieszów', "name": "Agata", "nick": "AAA", "posts":1_00_000}
+import sqlalchemy.orm
+from dml import db_params
 
+# user = {"city": 'Hrubieszów', "name": "Agata", "nick": "AAA", "posts":1_00_000}
+
+load_dotenv()
+engine = sqlalchemy.create_engine(db_params)
+connection = engine.connect()
+Session = sqlalchemy.orm.sessionmaker(bind=engine)
+session = Session()
+Base = sqlalchemy.orm.declarative_base()
 
 def get_coordinates_of(city:str)->list[float,float]:
 
@@ -94,6 +107,120 @@ def get_map_of(users) -> None:
                       f'Liczba postów {user["posts"]}'
             ).add_to(map)
         map.save('mapkaaaaa.html')
+def pogoda(town:str):
+    url = f"https://danepubliczne.imgw.pl/api/data/synop/station/{town}"
+    return requests.get(url).json()
+
+###################### SQL ###############################
+
+class User(Base):
+    __tablename__ = 'main_table'
+
+    id = Column(Integer(),primary_key=True)
+    posts = Column(Integer(), nullable=True)
+    name = Column(String(100), nullable=True)
+    nick = Column(String(100), nullable=True)
+    city = Column(String(100), nullable=True)
+    location = Column('geom', Geometry(geometry_type='POINT', srid=4326), nullable=True)
+
+def aktualiacja(lista, db_params):
+    engine = sqlalchemy.create_engine(db_params)
+    connection = engine.connect()
+    Session = sqlalchemy.orm.sessionmaker(bind=engine)
+    session = Session()
+
+    users_list: list =[]
+    for user in lista:
+        city = get_coordinates_of(user['city'])
+        users_list.append(
+            User(
+                name=user['name'],
+                posts=user['posts'],
+                nick=user['nick'],
+                city=user['city'],
+                location=f'POINT({city[1]} {city[0]})'
+            )
+        )
+    session.add_all(users_list)
+    session.commit()
+
+def add_user_to_table(lista, db_params):
+    engine = sqlalchemy.create_engine(db_params)
+    connection = engine.connect()
+    Session = sqlalchemy.orm.sessionmaker(bind=engine)
+    session = Session()
+
+    Base = sqlalchemy.orm.declarative_base()
+
+    class User(Base):
+        __tablename__ = 'Lista_uzytkownikow'
+
+        id = Column(Integer(), primary_key=True)
+        posts = Column(Integer(), nullable=True)
+        name = Column(String(100), nullable=True)
+        nick = Column(String(100), nullable=True)
+        city = Column(String(100), nullable=True)
+        location = Column('geom', Geometry(geometry_type='POINT', srid=4326), nullable=True)
+
+    Base.metadata.create_all(engine)
+
+    users_list: list = []
+
+    for user in lista:
+        city = get_coordinates_of (user['city'])
+        users_list.append(
+            User(
+                name=user['name'],
+                posts=user['posts'],
+                nick=user['nick'],
+                city=user['city'],
+                location=f'POINT({city[1]} {city[0]})'
+            )
+        )
+    session.add_all(users_list)
+    session.commit()
+
+def dodaj_usera(lissta, db_params):
+    engine = sqlalchemy.create_engine(db_params)
+    connection = engine.connect()
+
+    name = input('Imie: ')
+    nick = input('Nick: ')
+    post = int(input('Liczba postow: '))
+    city = input('Miasto: ')
+    lissta.append({"name": name, "nick": nick, "posts": post, 'city': city})
+    local = get_coordinates_of(city)
+    sql_query = sqlalchemy.text(
+        f"INSERT INTO public.user_list(name, nick, city, posts, geom) VALUES ('{name}', '{nick}', '{city}', '{post}', 'POINT({local[1]} {local[0]})');")
+
+    connection.execute(sql_query)
+    connection.commit()
+def zmien_dane(lista, db_params):
+    engine = sqlalchemy.create_engine(db_params)
+    connection = engine.connect()
+
+    user_nick = input('Podaj nick użytkownika ')
+    print(f' {user_nick}')
+    for user in lista:
+        if user['nick'] == user_nick:
+            print('Wyszukano')
+            nowe_imie = input('Podaj nowe imię użytkownika ')
+            user['name'] = nowe_imie
+            nowy_nick = input('Podaj nowy nick użytkownika ')
+            user['nick'] = nowy_nick
+            nowa_liczba_postow = input('Podaj nową liczbę postów ')
+            user['posts'] = nowa_liczba_postow
+            nowe_miasto = input('Podaj nową miasto ')
+            user['city'] = nowe_miasto
+            local = get_coordinates_of(nowe_miasto)
+
+    sql_query = sqlalchemy.text(
+        f"UPDATE public.list_of_muls SET name='{nowe_imie}', posts='{nowa_liczba_postow}', nick='{nowy_nick}', city='{nowe_miasto}', geom='POINT({local[1]} {local[0]})' WHERE nick='{user_nick}';")
+
+    connection.execute(sql_query)
+    connection.commit()
+
+
 def gui(users_list) -> None:
             while True:
                 print(f'MENU: \n'
@@ -101,7 +228,9 @@ def gui(users_list) -> None:
                       F'1: Wyswietl uzytkownikow \n'
                       F'2: dodaj uzytkownikow \n'
                       F'3: Usun uzytkownika \n'
-                      F'4: Modyfikuj uzytkownika'
+                      F'4: Modyfikuj uzytkownika\n'
+                      F'5: Rysuj mapę z podanym użytkownikiem\n'
+                      F'6: Rysuj mapę ze wszytskimi użytownikami\n'
                       )
                 menu_option = input('Podaj funkcje do wywolania')
                 print(f' Wybrano funkcje {menu_option}')

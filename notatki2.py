@@ -24,15 +24,12 @@ def dodaj_uzytkownika(user:str):
     sql_query_1=sqlalchemy.text("INSERT INTO public.my_table(name) VALUES('{user}');")
     connection.execute(sql_query_1)
     connection.commit()
-# cwok='stasiu'
-# dodaj_uzytkownika(cwok)
+
 
 def usun_uzytkownika(user:str):
     sql_query_1=sqlalchemy.text(f"delete from public.my_table where name='{user}';")
     connection.execute(sql_query_1)
     connection.commit()
-# cwok= 'stasiu'
-# usun_uzytkownika(cwok)
 
 
 def aktualizuj_uzytkownika(user_1:str, user_2:str):

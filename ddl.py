@@ -6,7 +6,7 @@ from faker import Faker
 from dotenv import load_dotenv
 from geoalchemy2 import Geometry
 load_dotenv()
-from .dml import User
+from dml import (User)
 
 db_params = sqlalchemy.URL.create(
     drivername='postgresql+psycopg2',

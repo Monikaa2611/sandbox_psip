@@ -22,10 +22,10 @@ def get_coordinates_of(city:str)->list[float,float]:
     response = requests.get(url=adres_URL)
     response_htlm = BeautifulSoup(response.text, 'html.parser')
 
-    res_h_lat = response_htlm.select('.latitude')[1].text  # . bo class
+    res_h_lat = response_htlm.select('.latitude')[1].text
     res_h_lat = float(res_h_lat.replace(',', '.'))
 
-    res_h_lon = response_htlm.select('.longitude')[1].text  # . bo class
+    res_h_lon = response_htlm.select('.longitude')[1].text
     res_h_lon = float(res_h_lon.replace(',', '.'))
 
     return [res_h_lat, res_h_lon]
@@ -166,7 +166,7 @@ def update_user(lissta, db_params):
             xy = get_coordinates_of(nowe_mias)
 
     sql_query = sqlalchemy.text(
-        f"UPDATE public.list_of_muls SET name='{nowe_imie}', posts='{nowa_liczba}', nick='{nowy_nick}', city='{nowe_mias}', geom='POINT({xy[1]} {xy[0]})' WHERE nick='{user_nick}';")
+        f"UPDATE public.lista_uzytkownikow SET name='{nowe_imie}', posts='{nowa_liczba}', nick='{nowy_nick}', city='{nowe_mias}', geom='POINT({xy[1]} {xy[0]})' WHERE nick='{user_nick}';")
 
     connection.execute(sql_query)
     connection.commit()
@@ -276,7 +276,5 @@ def data(db_params):
         data_1.append({"name": name, "nick": nick, "posts": post, 'city': city})
 
     return data_1
-# aa = 'Warszawa'
-# create_table(db_params)
+
 GUI(data(db_params))
-# get_coordinates_of(aa)

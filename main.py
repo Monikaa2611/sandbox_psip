@@ -1,9 +1,6 @@
-from dane import users_list
+import PROJEKT_BAZA
 
-
-for user in users_list:
-    print(f'Twój znajomy {user["nick"]} dodał {user["posts"]}')
-
-
+if __name__ == "__main__":
+    PROJEKT_BAZA.login_win()
 
 
